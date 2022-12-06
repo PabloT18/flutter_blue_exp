@@ -5,10 +5,12 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
-class ChatPage extends StatefulWidget {
+import 'widget/button_send_message.dart';
+
+class MessageDevice extends StatefulWidget {
   final BluetoothDevice server;
 
-  const ChatPage({required this.server});
+  const MessageDevice({required this.server});
 
   @override
   _ChatPage createState() => new _ChatPage();
@@ -21,7 +23,7 @@ class _Message {
   _Message(this.whom, this.text);
 }
 
-class _ChatPage extends State<ChatPage> {
+class _ChatPage extends State<MessageDevice> {
   static final clientID = 0;
   BluetoothConnection? connection;
 
@@ -50,12 +52,6 @@ class _ChatPage extends State<ChatPage> {
       });
 
       connection!.input!.listen(_onDataReceived).onDone(() {
-        // Example: Detect which side closed the connection
-        // There should be `isDisconnecting` flag to show are we are (locally)
-        // in middle of disconnecting process, should be set before calling
-        // `dispose`, `finish` or `close`, which all causes to disconnect.
-        // If we except the disconnection, `onDone` should be fired as result.
-        // If we didn't except this (no flag set), it means closing by remote.
         if (isDisconnecting) {
           print('Disconnecting locally!');
         } else {
@@ -113,13 +109,44 @@ class _ChatPage extends State<ChatPage> {
     return Scaffold(
       appBar: AppBar(
           title: (isConnecting
-              ? Text('Connecting chat to ' + serverName + '...')
+              ? Text('Conectando a ' + serverName + '...')
               : isConnected
-                  ? Text('Live chat with ' + serverName)
-                  : Text('Chat log with ' + serverName))),
+                  ? Text('Comunicate con  ' + serverName)
+                  : Text('Chat  ' + serverName))),
       body: SafeArea(
         child: Column(
           children: <Widget>[
+            ///
+            /// [Adicionar botones para mensajes definidos]
+            ///
+            SizedBox(height: 20),
+            Text('Botones personalizados'),
+
+            ///
+            Wrap(
+              children: [
+                ButtonMessageCustom(
+                  message: 'A',
+                  onTap: () => _sendMessage('A'),
+                ),
+                ButtonMessageCustom(
+                  message: '2',
+                  onTap: () => _sendMessage('2'),
+                ),
+              ],
+            ),
+
+            ///
+            ///
+            ///
+            /// [- Fin - ]
+            ///
+            Container(
+              height: 3,
+              color: Colors.black,
+            ),
+
+            ///
             Flexible(
               child: ListView(
                   padding: const EdgeInsets.all(12.0),
@@ -136,10 +163,10 @@ class _ChatPage extends State<ChatPage> {
                       controller: textEditingController,
                       decoration: InputDecoration.collapsed(
                         hintText: isConnecting
-                            ? 'Wait until connected...'
+                            ? 'Esperando emparejamiento'
                             : isConnected
-                                ? 'Type your message...'
-                                : 'Chat got disconnected',
+                                ? 'Escribe un mensaje'
+                                : 'Desconectado',
                         hintStyle: const TextStyle(color: Colors.grey),
                       ),
                       enabled: isConnected,
@@ -151,7 +178,8 @@ class _ChatPage extends State<ChatPage> {
                   child: IconButton(
                       icon: const Icon(Icons.send),
                       onPressed: isConnected
-                          ? () => _sendMessage(textEditingController.text)
+                          ? () =>
+                              _sendMessageFromChat(textEditingController.text)
                           : null),
                 ),
               ],
@@ -212,6 +240,31 @@ class _ChatPage extends State<ChatPage> {
   }
 
   void _sendMessage(String text) async {
+    text = text.trim();
+
+    if (text.length > 0) {
+      try {
+        connection!.output.add(Uint8List.fromList(utf8.encode(text + "\r\n")));
+        await connection!.output.allSent;
+
+        setState(() {
+          messages.add(_Message(clientID, text));
+        });
+
+        Future.delayed(Duration(milliseconds: 333)).then((_) {
+          listScrollController.animateTo(
+              listScrollController.position.maxScrollExtent,
+              duration: Duration(milliseconds: 333),
+              curve: Curves.easeOut);
+        });
+      } catch (e) {
+        // Ignore error, but notify state
+        setState(() {});
+      }
+    }
+  }
+
+  void _sendMessageFromChat(String text) async {
     text = text.trim();
     textEditingController.clear();
 

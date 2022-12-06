@@ -21,12 +21,10 @@ class BluetoothBloc extends Bloc<BluetoothEvent, BluetoothBlocState> {
       instanceBlue.requestDisable();
     });
 
-    // add(OnStartBlue());
-
-    instanceBlue.state.then((stateB) => add(StateChanged(stateB)));
-
     addressB = '--';
     nameB = '--';
+
+    add(OnStartBlue());
 
     instanceBlue
         .onStateChanged()
@@ -41,17 +39,15 @@ class BluetoothBloc extends Bloc<BluetoothEvent, BluetoothBlocState> {
   FutureOr<void> _onStartBlue(
       OnStartBlue event, Emitter<BluetoothBlocState> emit) async {
     if ((await FlutterBluetoothSerial.instance.isEnabled) ?? false) {
-      // var addressB = '';
-      // var nameB = '';
-
-      instanceBlue.address.then((address) {
+      await instanceBlue.address.then((address) {
         addressB = address!;
       });
 
-      instanceBlue.name.then((name) {
+      await instanceBlue.name.then((name) {
         nameB = name!;
       });
-      emit(BluetoothOn(address: addressB, name: nameB));
+
+      instanceBlue.state.then((stateB) => add(StateChanged(stateB)));
     }
   }
 
