@@ -17,12 +17,12 @@ struct phSensor
   float voltage;
   unsigned long samplingTime = 0;
   
-  /*unsigned*/ short lastValues[phSensorSamplesNumber];
+  short lastValues[phSensorSamplesNumber];
   unsigned char  lastValueIndex = 0;
   
   const byte pin; // @TODO ? constexpr, skoro wszystkie piny i tak sa podawane compile-time
   
-  /* Operators */
+ 
   phSensor(const byte pin)
     : pin(pin)
   {}

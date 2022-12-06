@@ -1,8 +1,4 @@
-/// Example temperature and ph level monitor
-///
-/// Part of code of https://gitlab.com/PsychoXIVI/aquariumcontroller by Patryk (PsychoX) Ludwikowski
-/// Cutted to simple monitor for https://github.com/edufolly/flutter_bluetooth_serial/pull/35
-////////////////////////////////////////////////////////////////////////////////
+
 #include <Wire.h>
 
 #define DEBUG 1
@@ -10,9 +6,6 @@
 #include "Termometer.hpp"
 #include "phSensor.hpp"
 
-// There was so (stupidly) called `BluetoothQwertyServer` which provides simple packet system with data retransmission, but this should be simple example, so... bye friend :F
-
-// Library for virtual serial ports over normal pins
 #include <SoftwareSerial.h>
 
 SoftwareSerial bluetooth(7, 8);
@@ -61,15 +54,7 @@ void loop(void)
     lastRefreshTime += 1000;
     
     if (doUpdateStatus) {
-      // Every update there are temperatures and water pH level sent coded into binary form of:
-      // 't', 
-      // integer part of value in Celcius of first termometer, 
-      // fractional part of value in Celcius of first termometer,
-      // integer part of value in Celcius of second termometer, 
-      // fractional part of value in Celcius of second termometer,
-      // 'w'
-      // integer value of water pH level, 
-      // fractional part of water pH level.
+     
       
       bluetooth.write('t');
       for (byte i = 0; i < 2; i++) {
